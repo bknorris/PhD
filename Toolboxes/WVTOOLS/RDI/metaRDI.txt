@@ -1,0 +1,35 @@
+## This is an example metadata file for a RD Instruments ADCP.
+## Reqired NetCDF attributes are noted and must not be removed.
+## Users may remove any non-required attributes or add any
+## additional attributes they choose, however the attribute's
+## description must start at column 20 and not exceed column 83.  
+##
+## C. Sullivan, 03/28/06, version 1.0
+##
+MOORING            7201                                                           ## mooring identifier number
+Deployment_date    28-Oct-2003                                                    ## date of instrument deployment
+Recovery_date      21-Jan-2004                                                    ## date of instrument recovery
+INST_TYPE          RD Instruments ADCP                                            ## type of instrument and instrument manufacturer
+history            ADCP wave data processed with RDI WavesMon software            ## history of the netcdf file
+DATA_SUBTYPE       MOORED                                                         ## description of DATA_TYPE   
+DATA_ORIGIN        USGS/WHFC                                                      ## institution responsible for creating the file   
+COORD_SYSTEM       GEOGRAPHIC                                                     ## coordinate system of the data   
+WATER_MASS         ?                                                              ## water mass flag used for EPIC contouring programs   
+POS_CONST          0                                                              ## consistent position flag (=1 not consistent)       
+DEPTH_CONST        0                                                              ## consistent depth flag (=1 not consistent)     
+WATER_DEPTH        11.3 M                                                         ## water depth in meters
+WATER_DEPTH_NOTE   Water depth from mooring log                                   ## source of water depth information            
+DRIFTER            0                                                              ## drifter flag (=1 if drifter)      
+EXPERIMENT         Myrtle Beach                                                   ## experiment name         
+PROJECT            South Carolina Coastal Erosion Study                           ## project name       
+DESCRIPT           Site 1 ADCP                                                    ## location and/or site of data collection    
+longitude          -78.7893                                                       ## (required) instrument longitude, negative is West   
+latitude           33.6497                                                        ## (required) instrument latitude, positive is North   
+FILL_FLAG          0                                                              ## data fill flag (=1 if data has fill values)        
+COMPOSITE          0                                                              ## number of pieces in composite series  
+magnetic_variation -8.22                                                          ## degrees between magnetic and true north at data location
+ADCPBinSize        0.5 M                                                          ## ADCP bin size in meters
+metafile_name      720whmeta.txt                                                  ## name of metafile
+metafile_author    Charlene Sullivan, USGS WHSC                                   ## author of the metafile
+metafile_version   1.0                                                            ## version of the metafile
+wavesmon_version   2.01                                                           ## version of wavesmon used to process data

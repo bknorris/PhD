@@ -1,0 +1,33 @@
+## This is an example metadata file for a SonTek Argonaut.
+## Reqired NetCDF attributes are noted and must not be removed.
+## Users may remove any non-required attributes or add any
+## additional attributes they choose, however the attribute's
+## description must start at column 20 and not exceed column 83.  
+##
+## C. Sullivan, 11/02/05, version 1.0
+##
+MOORING            7263                                                           ## mooring identifier number
+Deployment_date    26-Oct-2003                                                    ## date of instrument deployment
+Recovery_date      23-Jan-2004                                                    ## date of instrument recovery
+INST_TYPE          Sontek Argonaut XR                                             ## type of instrument and instrument manufacturer
+history            Argonaut wave data exported from ViewArgonaut                  ## netcdf file history
+DATA_SUBTYPE       MOORED                                                         ## description of DATA_TYPE   
+DATA_ORIGIN        GaTech/USGS/WHFC                                               ## institution responsible for creating the file   
+COORD_SYSTEM       GEOGRAPHIC                                                     ## coordinate system of the data   
+WATER_MASS         ?                                                              ## water mass flag used for EPIC contouring programs, (required)   
+POS_CONST          0                                                              ## consistent position flag (=1 not consistent), (required)       
+DEPTH_CONST        0                                                              ## consistent depth flag (=1 not consistent), (required)     
+WATER_DEPTH        10.6 M                                                         ## water depth in meters
+WATER_DEPTH_NOTE   Water depth from mooring log                                   ## source of water depth information            
+DRIFTER            0                                                              ## drifter flag (=1 if drifter), (required)     
+VAR_FILL           1.0000000409184788E35                                          ## missing or bad data value identifier, (required)   
+EXPERIMENT         Myrtle Beach                                                   ## experiment name         
+PROJECT            South Carolina Coastal Erosion Study                           ## project name       
+DESCRIPT           Site 6 Argonaut                                                ## location and/or site of data collection    
+longitude          -78.760                                                        ## instrument location   
+latitude           33.707                                                         ## instrument location   
+FILL_FLAG          0                                                              ## data fill flag (=1 if data has fill values), (required)        
+COMPOSITE          0                                                              ## number of pieces in composite series, (required)  
+magnetic_variation -8.22                                                          ## degrees between magnetic and true north at data location, (required)
+metafile_author    Charlene Sullivan, USGS                                        ## author of the metafile
+metafile_version   1.0                                                            ## version of the metafile

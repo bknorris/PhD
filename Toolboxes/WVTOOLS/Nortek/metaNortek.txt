@@ -1,0 +1,41 @@
+## This is an example metadata file for a Nortek Aquadopp AP.
+## Reqired NetCDF attributes are noted and must not be removed.
+## Users may remove any non-required attributes or add any
+## additional attributes they choose, however the attribute's
+## description must start at column 20 and not exceed column 83.  
+##
+## C. Sullivan, 03/19/06, version 1.0
+##
+MOORING            7311                                                           ## mooring identifier number
+Deployment_date    26-Oct-2003                                                    ## date of instrument deployment
+Recovery_date      29-Jan-2004                                                    ## date of instrument recovery
+INST_TYPE          Nortek Aquadopp Acoustic Profiler                              ## type of instrument and instrument manufacturer
+history            Aquadopp wave data exported from AquaPro                       ## netcdf file history
+DATA_SUBTYPE       MOORED                                                         ## description of DATA_TYPE   
+DATA_ORIGIN        USC/USGS/WHFC                                                  ## institution responsible for creating the file   
+COORD_SYSTEM       GEOGRAPHIC                                                     ## coordinate system of the data   
+WATER_MASS         ?                                                              ## water mass flag used for EPIC contouring programs, (required)   
+POS_CONST          0                                                              ## consistent position flag (=1 not consistent), (required)       
+DEPTH_CONST        0                                                              ## consistent depth flag (=1 not consistent), (required)     
+WATER_DEPTH        9.4  M                                                         ## water depth in meters
+WATER_DEPTH_NOTE   Water depth from mooring log                                   ## source of water depth informaton            
+DRIFTER            0                                                              ## drifter flag (=1 if drifter), (required)     
+VAR_FILL           1.0000000409184788E35                                          ## missing or bad data value identifier, (required)   
+EXPERIMENT         Myrtle Beach                                                   ## experiment name         
+PROJECT            South Carolina Coastal Erosion Study                           ## project name       
+DESCRIPT           Site 8 Aquadopp                                                ## location and/or site of data collection    
+longitude          -78.772                                                        ## instrument location   
+latitude           33.717                                                         ## instrument location   
+FILL_FLAG          0                                                              ## data fill flag (=1 if data has fill values), (required)        
+COMPOSITE          0                                                              ## number of pieces in composite series, (required)  
+magnetic_variation -8.22                                                          ## degrees between magnetic and true north at data location, (required)
+sensor_height      0.48                                                           ## sensor height above the bed in meters, (required)
+lf                 0.03                                                           ## PUV parameter - low frequency cutoff, Hz, (required)  
+maxfac             15                                                             ## PUV parameter - maximum value of factor scaling pressure to waves, (required)
+minspec            0.1                                                            ## PUV parameter - minimum spectral level for computing direction and spreading, mm^2/Hz, (required)
+Ndir               0                                                              ## PUV parameter - direction offset, deg (includes compass error and misalignment of cable probe relative to case. (the offset for the Aquadopp Profiler is 0), (required)
+nf                 100                                                            ## PUV parameter - nominal number of output frequencies, (required)
+metafile_name      720whmeta.txt                                                  ## name of metafile
+metafile_author    Charlene Sullivan, USGS                                        ## author of the metafile
+metafile_version   1.0                                                            ## version of the metafile
+
