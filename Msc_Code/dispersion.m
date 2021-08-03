@@ -1,0 +1,1 @@
+function y=dispersion(k,sig,h)%disp(k);% y=abs(-sig+sqrt(9.81*k*tanh(k*h))); y=-sig+sqrt(9.81*k*tanh(k*h));

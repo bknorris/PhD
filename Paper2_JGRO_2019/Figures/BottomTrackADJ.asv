@@ -1,0 +1,32 @@
+%Adjust bottom tracking for HTA 1 and VTA (VP1): TKE FILES ONLY.
+
+load('D:\Projects\Mekong_W2015\DataAnalysis\Paper1\BDtrack_RS.mat')
+load('D:\Projects\Mekong_W2015\DataAnalysis\Paper1\RStress_10min.mat')
+date = {'day1';'day4'};
+vph = [0.062 0.063 0.061;0.07 0 0];
+for k = 1:2
+    fn = fieldnames(data.(date{k}));
+    dn = fieldnames(RS.(date{k}));
+    if k == 2
+        g = 1;
+    else
+        g = 1:3;
+    end
+    for i = g
+        bd = data.(date).(fn{i}).bd;
+        bh = vph(k,i)-bd;
+        bhadj = bh+0.002; %buffer zone of bed
+        vh = vph(k,i)-0.04-linspace(0.001,0.03,30);
+        for j = 1:length(bh);
+            id = find(bhadj(j) >= vh,1,'first');
+            RS.(date).(dn{i}).uw(id:end,j) = NaN;
+            RS.(date).(dn{i}).vw(id:end,j) = NaN;
+            RS.(date).(dn{i}).uwstar(id:end,j) = NaN;
+            RS.(date).(dn{i}).vwstar(id:end,j) = NaN;
+            RS.(date).(dn{i}).ku0(id:end,j) = NaN;
+            RS.(date).(dn{i}).kv0(id:end,j) = NaN;
+        end
+    end
+end
+dirname = 'd:\Projects\Mekong_W2015\DataAnalysis\Paper1\';
+save([dirname 'RStress_10min_bdadj'],'Stat','-v7.3')

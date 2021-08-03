@@ -1,0 +1,79 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%We're going to plot TKE dissipation rates (averaged over 10 minute
+%windows) against the vegetation statistics (phi) to see if there is a
+%trend in TKE with increasing vegetation density. In this case, plot PHI by
+%CROSS-SHORE DISTANCE (X) and compare this to TKE dissipation rates by
+%distance.
+
+%This script is to process the velocity data into a sensible structure,
+%which will also include wave data (akin to the VegDensityTKE.m script).
+%Distance values are located in the dat structure from CatVegGeometry.m
+%The actual plots will be made by another script:
+%
+%
+%Velocity data records(et al) will be divided into three time periods: low, 
+%mid and high tide as evenly as possible. THese divisions can be recombined
+%for the eventual TKE/Phi/Distance figure.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+clear
+
+veldir = 'c:\Users\bkn5\Projects\Mekong_F2014\DataAnalysis\Paper2\AveragedVelocities\';
+wvdir = 'c:\Users\bkn5\Projects\Mekong_F2014\DataAnalysis\Paper2\Spectra\';
+tkedir = 'c:\Users\bkn5\Projects\Mekong_F2014\DataAnalysis\Paper2\TKE\';
+velfiles = dir(veldir);velfiles = {velfiles.name};
+tkefiles = dir(tkedir);tkefiles = {tkefiles.name};
+wvfiles = dir(wvdir);wvfiles = {wvfiles.name};
+%extract TKE estimates from TKE files
+horiz = [1 1 0 0 1 0 1 0];
+ebb = [0 1 0 1 0 0 0 0];                                                    %experiments where the ebb tide was recorded
+eps = zeros(length(tkefiles)-2,3);
+wvrms = zeros(length(tkefiles)-2,1);
+stdev = zeros(length(tkefiles)-2,3);
+c = 1;                                                                      %index counter
+for i = 3:length(tkefiles)
+    load([tkedir tkefiles{i}])
+    load([veldir velfiles{i}])
+    load([wvdir wvfiles{i}])
+    %crop wavestats to the TKE deployment record: from closest values
+    vl = length(Stat.vpro1.time);
+            ind = zeros(1,vl);
+            for j = 1:vl 
+                tmp = abs(wvstats.time-Stat.vpro1.time(j));
+                [~,idx] = min(tmp);
+                ind(j) = idx;
+            end
+    %Use times to determine the number of samples to average over by
+    %dividing the timeseries in thirds
+    start = Stat.vpro1.time(1);stop = Stat.vpro1.time(end);
+    [~,~,~,hr,min,~] = datevec(stop-start);
+    time = (hr*60) + min;                                                   %calculate minutes elapsed between start/stop time of experiment
+    time = datenum(0,0,0,0,floor(time/3),0);
+    timee = start:time:stop;
+    for j = 1:length(timee)-1
+        id = find(Stat.vpro1.time >= timee(j) & Stat.vpro1.time <= timee(j+1));
+        if horiz(c) == 1                                                        %if the instrument is horizontal, use bin 15 for TKE estimates
+            if ebb(c) == 0
+                tk = nanmean((Stat.vpro1.beam1.E(15,id)+Stat.vpro1.beam3.E(15,id))./2);
+                av = nanmean(Avgs.vpro1.x(15,id));                              
+            elseif ebb(c) == 1
+                id = fliplr(id);
+                tk = nanmean((Stat.vpro1.beam1.E(15,id)+Stat.vpro1.beam3.E(15,id))./2);
+                av = nanmean(Avgs.vpro1.x(15,id));                              
+            end
+        elseif horiz(c) == 0
+            if ebb(c) == 0
+                tk = nanmean((Stat.vpro1.beam1.E(7,id)+Stat.vpro1.beam3.E(7,id))./2);
+                av = nanmean(Avgs.vpro1.x(7,id));                              
+            elseif ebb(c) == 1
+                id = fliplr(id);
+                tk = nanmean((Stat.vpro1.beam1.E(7,id)+Stat.vpro1.beam3.E(7,id))./2);
+                av = nanmean(Avgs.vpro1.x(7,id));                              
+            end
+        end
+        e
+    end
+    eps(c,:) = e;
+    wvrms(c) = nanmean(wvstats.hrmsp(ind));
+    stdev(c,:) = stdv;
+    c = c+1;
+end

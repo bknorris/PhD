@@ -1,0 +1,4 @@
+%make color plots of TKE dissipation rate for a few select deployments, 
+%F2F, F2F2, F2F3, FSS2, and DPS
+
+datdir1 = 'd:\Projects\Mekong_F2014\DataAnalysis\Paper2\TKE\';

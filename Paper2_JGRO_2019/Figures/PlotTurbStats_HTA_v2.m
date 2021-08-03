@@ -1,0 +1,160 @@
+%Plot averaged lateral vorticity, Reynolds Stresses and eddy viscosities
+%for the HTA experiment (3 x 3 panel subplots). This is version 1 of this
+%script.
+clear, close all
+f1 = figure;
+set(f1,'PaperOrientation','portrait',...
+    'position',[400 100   800  800]);
+set(gcf,'color','w','paperpositionmode','auto')
+sp = zeros(9,1);
+hab = [0.066 0.066 0.066;
+    0.248 0.248 0.248;
+    0.550 0.550 0.550;
+    0.07  0.416 0.806];
+hc = [0.58 0.58 0.58 0.6 0.6 0.6];
+savefigdir = 'f:\GradSchool\DataAnalysis\Paper2\WorkingFigures\VerticalProfiles\';
+
+%% Load in vorticity (velocity) files
+datdir = 'd:\Projects\Mekong_W2015\DataAnalysis\Paper2\AveragedVelocities\SingleRotation\';
+files = {'7March2015_Vave_sngrot.mat';'8March2015_Vave_sngrot.mat';'10March2015_Vave_sngrot.mat';...
+    '14March2015a_bdadj_srot.mat'};
+%Plot routine
+line = {'-';'--';'-.'};
+s = [7 4 1]; %subplot order
+for i = 1:3
+    load([datdir files{i}])
+    %calc omega_y between VP2 and VP3
+    w1 = (Avgs.vpro2.z1+Avgs.vpro2.z2)./2;
+    w2 = (Avgs.vpro3.z1+Avgs.vpro3.z2)./2;
+    x1 = Avgs.vpro2.x;x2 = Avgs.vpro3.x;
+    if length(w1) < length(w2)
+        w2 = w2(:,1:length(w1));
+        x2 = x2(:,1:length(x1));
+    end
+    dw = nanmean(w1-w2,2);
+    if i == 1
+        du = nanmean((x1+x2)./2,2);
+        du(25:35) = NaN;dw(25:35) = NaN;
+    else
+        du = nanmean(x1,2);
+    end
+    omgy = du-dw;
+    z = hab(i,1)-0.04-linspace(0,0.03,35);
+    zhc = z./hc(i);
+    sp(s(i)) = subplot(3,3,s(i));
+    plot(omgy,zhc,'-',...
+        'color','k',...
+        'linewidth',3), hold on
+    if i == 2
+        plot(linspace(-0.01,0.02,10),ones(10,1)*0.33,'--k','linewidth',1.5)
+    end
+    grid on
+end
+%% Load in Reynolds stress files
+load('D:\Projects\Mekong_W2015\DataAnalysis\Paper2\RS_estimates\RStress_10min_v4test.mat')
+s = [8 8 8;5 5 5;2 2 2]; %subplot order
+cmap = csvread('f:\GradSchool\Design\Qualitative8_4.csv');
+cmap = flipud(cmap)./255;
+dn = fieldnames(RS);
+for i = 1:3
+    fn = fieldnames(RS.(dn{i}));
+    for j = 1:3
+        cc = cmap(j,:);
+        tmp = RS.(dn{i}).(fn{j}).uw;
+        if i == 1
+            tmp = tmp(25:80,:);
+        end
+        id = find(tmp> 0.25 | tmp < -0.25);
+        tmp(id) = NaN;
+        uw = nanmean(tmp);
+        z = hab(i,j)-0.04-linspace(0,0.03,35);
+        zhc = z./hc(i);
+        sp(s(i)) = subplot(3,3,s(i));
+        plot(uw,zhc,line{j},...
+            'color',cc,...
+            'linewidth',3), hold on
+        if i == 2
+            plot(linspace(-0.01,0.02,10),ones(10,1)*0.33,'--k','linewidth',1.5)
+        end
+        grid on
+    end
+end
+%% Load in eddy viscosity files
+load('D:\Projects\Mekong_W2015\DataAnalysis\Paper2\EddyViscosity\U_z_gradient_v4.mat')
+s = [9 9 9;6 6 6;3 3 3];
+for i = 1:3
+    fn = fieldnames(RS.(dn{i}));
+    for j = 1:3
+        cc = cmap(j,:);
+        uw = RS.(dn{i}).(fn{j}).uw;
+        time1 = RS.(dn{i}).(fn{j}).time;
+        time2 = slope.(dn{i}).(fn{j}).time';
+        %average dudz to the same size as uw
+        dudz = repmat(slope.(dn{i}).(fn{j}).dudz,1,35);
+        %eddy viscosity is Re stress/velocity gradient
+        nue = -1*nanmean(uw)./dudz;
+        nue(isinf(nue)) = NaN;
+        z = hab(i,j)-0.04-linspace(0,0.03,35);
+        zhc = z./hc(i);
+        
+        sp(s(i)) = subplot(3,3,s(i));
+        plot(nue,zhc,line{j},...
+            'color',cc,...
+            'linewidth',3), hold on
+        grid on
+        if i == 2
+            plot(linspace(-5E-4,1E-3,10),ones(10,1)*0.33,'--k','linewidth',1.5)
+        end
+    end
+end
+%% Global plot adjustments
+%xscales
+%Vorticity
+set(sp(7),'xlim',[-5E-3 5E-3],'xtick',-5E-3:5E-3:5E-3)
+set(sp(4),'xlim',[0.005 0.02],'xtick',0:0.01:0.02)
+set(sp(1),'xlim',[0.02 0.04],'xtick',0.02:0.01:0.04)
+%RS
+set([sp(2) sp(5) sp(8)],'xlim',[-2E-3 3E-3],'xtick',-3E-3:1.5E-3:3E-3)
+%EV
+set([sp(3) sp(6) sp(9)],'xlim',[-5E-4 5E-4],'xtick',-5E-4:2.5E-4:5E-4)
+%row 3
+set(sp(7),'ylim',[0 0.05],...
+    'ytick',0:0.02:0.6,...
+    'position',[0.12 0.1 0.21 0.22])
+set(sp(8),'ylim',[0 0.05],...
+    'ytick',0:0.02:0.6,...
+    'position',[0.44 0.1 0.21 0.22])
+set(sp(9),'ylim',[0 0.05],...
+    'ytick',0:0.02:0.6,...
+    'position',[0.76 0.1 0.21 0.22])
+%row 2
+set(sp(4),'ylim',[0.3 0.36],...
+    'ytick',0.3:0.02:0.36,...
+    'position',[0.12 0.42 0.21 0.22])
+set(sp(5),'ylim',[0.3 0.36],...
+    'ytick',0.3:0.02:0.36,...
+    'position',[0.44 0.42 0.21 0.22])
+set(sp(6),'ylim',[0.3 0.36],...
+    'ytick',0.3:0.02:0.36,...
+    'position',[0.76 0.42 0.21 0.22])
+%row 1
+set(sp(1),'ylim',[0.82 0.88],...
+    'ytick',0.82:0.02:0.88,...
+    'position',[0.12 0.74 0.21 0.22])
+set(sp(2),'ylim',[0.82 0.88],...
+    'ytick',0.82:0.02:0.88,...
+    'position',[0.44 0.74 0.21 0.22])
+set(sp(3),'ylim',[0.82 0.88],...
+    'ytick',0.82:0.02:0.88,...
+    'position',[0.76 0.74 0.21 0.22])
+title(sp(1),'(a)'),ylabel(sp(1),'z/h_c')
+title(sp(2),'(b)')
+title(sp(3),'(c)')
+title(sp(4),'(d)'),ylabel(sp(4),'z/h_c')
+title(sp(5),'(e)')
+title(sp(6),'(f)')
+title(sp(7),'(g)'),ylabel(sp(7),'z/h_c'),xlabel(sp(7),'\omega_y (s^{-1})')
+title(sp(8),'(h)'),xlabel(sp(8),'$-\overline{u''w''} \quad (m^2s^{-2})$','Interpreter','latex')
+title(sp(9),'(i)'),xlabel(sp(9),'$\overline{\nu_t} \quad (m^2s^{-1})$','Interpreter','latex')
+prettyfigures('text',12,'labels',13,'box',1,'tlength',[0.025 0.025])
+export_fig([savefigdir 'TurbStats_HTA_v1'],'-pdf')

@@ -1,0 +1,16 @@
+    %Rough turbulent wave-plus-current shear stress (Soulsby, 2005)
+    ks = 2.5*d50;
+    z0 = (ks/30);
+    fw = 1.39*(Aw./z0).^-0.52; %wave friction factor
+    Cdr = (0.4./(log(H./z0)-1)).^2; %roughness length
+    ar = 0.24;
+    T1 = ar*((fw./2).^(1/2)).*(Aw./z0);
+    T1(T1<12) = 12;
+    T2 = H./(T1.*z0);
+    T3 = (Cdr+((fw./2).^2).*((ubr./mean(Uc)).^4)).^(1/4);
+    A1 = (T3.*log(T2)-1)./(2.*log(T1));
+    A2 = 0.4*T3./log(T1);
+    Cdm = ((((A1.^2)+A2).^(1/2))-A1).^2;
+    Cdmax = (((Cdm+T3.*(ubr./mean(Uc)).*((fw/2).^(1/2))*abs(cos(phi))).^2)+...
+        (T3.*(ubr./mean(Uc)).*((fw/2).^(1/2)).*abs(sin(phi))).^2).^(1/2);
+    tmax = rho.*Cdmax.*mean(Uc)^2;

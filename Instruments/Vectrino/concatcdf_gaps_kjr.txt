@@ -1,0 +1,157 @@
+% concatcdf_gaps concatentate several netCDF EPIC files together, and deal
+% appropriately with the gaps using JPX's cmgcolock. calls loadnc_old,
+% which uses USGS netcdf toolbox. This could be replaced with loadnc, which
+% uses native netcdf
+%
+% function concatcdf_gaps(fileList, newFile)
+% where 
+%   fileList is a cell array of file names
+%   newFile is the name of the resulting file
+%
+%   calls: julian2datenum,loadnc_old,cmgcolock
+%
+% appends more than 2 EPIC files, fills any gaps and updates attributes.
+% files must have the same variables, attributes, i.e. be part of the same
+% instrument time series.
+% Modified to only update minima and maxima in variables that already
+% have those attributes.  
+
+% Adapted from concatcdf.m by Marinna Martini, which was adapted from 
+% many_concat.m by Fran Hotchkiss 17 Feb 1999 
+% 
+
+function concatcdf_gaps(fileList, newFile)
+
+% if ~exist('fileList','var')
+%     [fileList,pathName] = uigetfile('*.cdf','Select files to combine','MultiSelect','on'); 
+% else
+%     pathName = pwd;
+% end
+% if ~exist('newFile', 'var')
+%     newFile = inputdlg('Enter a file name');
+% end
+% 
+% if length(fileList)<2, disp('Need more than one file...'); return; end
+[path,name,ext] = fileparts(fileList{1});
+
+%get the data
+disp('Reading in the data from multiple files')
+for ifile = 1:length(fileList),
+    A(ifile) = loadnc_old(fileList{ifile});
+end
+%open one of the original files to get variable names, etc.
+a = netcdf(fileList{1},'nowrite');
+
+%make a new file
+c = netcdf(newFile, 'clobber');
+ncrecvar = recvar(a);
+recnames = ncnames(ncrecvar);
+
+% first get the times from all the files to create new timebase
+disp('Concatenating timebase')
+switch ext 
+    case '.cdf'
+    jd = A(1).TIM';
+    for i = 2:length(A)
+        jd = [jd A(i).TIM'];
+    end
+    case '.nc'
+    nctime = A(1).time';nctime2 = A(1).time2';
+    for i = 2:length(A)
+        nctime = [nctime A(i).time'];
+        nctime2 = [nctime2 A(i).time2'];
+    end
+    jd = (nctime + nctime2/86400000)';
+end
+[JD] = cmgcolock(jd);dT = (JD(2)-JD(1))*24;t1 = round(1/dT);t2 = round(6/dT);
+N = length(JD);nEns = 1:1:N;
+%now loop through all the record variables and paste the data and fill gaps
+disp('Concatenating all the data and filling gaps with NaNs')
+fields = fieldnames(A(1));DATA = struct();
+for j = 1:length(recnames);
+    ind = find(strcmp(recnames(j),fields));
+    data = A(1).(fields{ind})';
+    for i = 2:length(A)
+        data = [data A(i).(fields{ind})'];
+    end
+    data = data';
+    [t,newdata] = cmgcolock(jd,data);
+%     [NEWDATA] = cmgbridge(newdata,t1,t2,10000);
+    DATA.(fields{ind}) = newdata;
+end
+
+% copy(a('depth'),c),copy(a('lat'),c),copy(a('lon'),c),
+vars = var(a);nvars = length(vars);VARS = ncnames(vars);
+
+switch ext 
+    case '.cdf'
+    c('ensemble') = 0;c('bin') = ncsize(a('bin'));
+    c{'TIM'} = ncdouble('ensemble');
+    c{'TIM'}(1:N) = JD;
+    copy(a{'D'},c,1,1);
+    copy(a{'TIM'},c,0,1);
+    ncstime = julian2datenum(jd(1));
+    ncendtime = julian2datenum(jd(end));
+    c{'ensemble'} = ncint('ensemble');c{'ensemble'}(:) = nEns;copy(a{'ensemble'},c,0,1);
+    c{'Rec'} = ncint('ensemble');c{'Rec'}(:) = nEns;copy(a{'Rec'},c,0,1);
+    case '.nc'
+    % the new time
+    time = floor(JD);time2 = (JD-floor(JD))*86400000;
+    c('time') = 0;   % this expands to the number of ensembles there SHOULD be
+    c('lat') = 1;c('lon') = 1;
+    copy(a{'lat'},c,1,1);copy(a{'lon'},c,1,1);
+    c('depth') = ncsize(a('depth'));
+    copy(a{'bindist'},c,1,1);copy(a{'depth'},c,1,1);
+    c{'time'} = ncdouble('time');c{'time2'} = ncdouble('time');
+    c{'time'}(1:N) = time;c{'time2'}(1:N) = time2;
+    copy(a{'time'},c,0,1);copy(a{'time2'},c,0,1);
+    ncstime = julian2datenum(nctime(1) + nctime2(1)/86400000);
+    ncendtime = julian2datenum(nctime(end) + nctime2(end)/86400000);
+    c{'time'}.type = ncchar('UNEVEN');
+    c{'time2'}.type = ncchar('UNEVEN');
+    c{'Rec'} = ncint('time');c{'Rec'}(:) = nEns;copy(a{'Rec'},c,0,1);
+end
+
+% now fill in the new data
+flds = fieldnames(DATA);
+for i = 1:length(recnames);
+    dvar = a{recnames{i}};dname = ncnames(dvar);
+    if any(strcmp(dname,{'time','time2','Rec','TIM','ensemble'}))
+        continue
+    else
+    ind = find(strcmp(recnames(i),flds));
+    disp(['Processing data from variable ' flds{ind}])
+    [n,m] = size(DATA.(flds{ind}));
+     copy(dvar,c,0,1);cvar = c{recnames{i}};
+     cvar(:) = DATA.(flds{ind});
+     cvar.minimum = ncfloat(gmin(DATA.(flds{ind})));
+     cvar.maximum = ncfloat(gmax(DATA.(flds{ind})));
+     cvar = autonan(cvar,1);
+    end
+end
+% copy the rest of the file attributes
+copy(att(a),c)
+
+nc.COMPOSITE = ncdouble(1);
+nc.start_time = datestr(ncstime,0);
+nc.stop_time = datestr(ncendtime,0);
+nc.CREATION_DATE = ncchar(datestr(now,0));
+history = sprintf('Concatenation of files %s through %s :%s',...
+    fileList{1}, fileList{end}, a.history(:));
+c.history = ncchar(history);
+close(c)
+close(a)
+return
+
+function result = testcdfFileSize(file1, file2)
+
+MAXCDFSIZE = 2000000000;
+result = 1; % assume it's OK
+d1 = dir(file1);
+d2 = dir(file2);
+
+if (d1.bytes+d2.bytes) > MAXCDFSIZE, result = 0; end
+
+return
+
+
